@@ -1,5 +1,14 @@
 {
   "manifest_version": 3,
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "lux@incigencer",
+      "strict_min_version": "140.0",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+    }
+  },
   "name": "Lux",
   "version": "1.4",
   "description": "Seçtiğiniz metni sağ tık menüsünden veya klavye kısayoluyla renkli vurgulayın; kısayolla geri alın.",
@@ -20,7 +29,8 @@
     }
   },
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "scripts": ["background.js"]
   },
   "content_scripts": [
     {

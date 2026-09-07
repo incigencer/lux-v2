@@ -37,9 +37,12 @@
     if (text != null) n.textContent = text;
     return n;
   }
+  // SVG işaretlemesi yalnızca yukarıdaki statik SVG sabitlerinden gelir;
+  // DOMParser ile ayrıştırıp güvenli şekilde ekliyoruz (innerHTML kullanmadan).
   function icon(markup) {
     var s = el("span", "lux-bb-icon");
-    s.innerHTML = markup;
+    var parsed = new DOMParser().parseFromString(markup, "image/svg+xml");
+    s.appendChild(document.importNode(parsed.documentElement, true));
     return s;
   }
   function clickSite(node) {
@@ -196,7 +199,7 @@
     chip.id = "lux-bb-toggle";
     chip.type = "button";
     var logo = el("span", "lux-bb-dot");
-    logo.innerHTML = SVG.bluebookLogo;
+    logo.appendChild(icon(SVG.bluebookLogo).firstChild);
     chip.appendChild(logo);
     chip.appendChild(el("span", null, "Bluebook Mode"));
     chip.addEventListener("click", enable);
