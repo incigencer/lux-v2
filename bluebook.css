@@ -1,0 +1,756 @@
+/* ==========================================================================
+   Lux — "Bluebook" modu (satquestionbank.org)
+   ==========================================================================
+   ÖNEMLİ: Buradaki kuralların TAMAMI `html.lux-bb` altında kapsanmıştır.
+   Yani mod kapalıyken bu dosya sayfaya hiçbir şey yapmaz; site normal
+   görünümünde kalır. Modu bluebook.js açıp kapatır (html'e .lux-bb ekler).
+
+   Seçici stratejisi: Tailwind'in ürettiği kırılgan sınıflar yerine
+   sitenin sabit/anlamlı sınıfları (.explanation_content, .answer_content,
+   .join, .label, .radio) ve tek olan etiketler (main, nav, footer) ile
+   `:has()` yapısal seçimleri kullanıldı.
+   ========================================================================== */
+
+:root {
+  --bb-header: #e9edf7;
+  --bb-line: #b9c0cf;
+  --bb-ink: #1b1b1b;
+  --bb-navy: #0e2144;
+  --bb-blue: #3557d8;
+  --bb-blue-dark: #2843b8;
+  --bb-box: #c9cede;
+  --bb-tint: #eef2fd;
+  --bb-muted: #5b6478;
+  --bb-serif: Georgia, "Times New Roman", serif;
+  --bb-sans: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --bb-header-h: 92px;
+  --bb-footer-h: 78px;
+}
+
+/* --------------------------------------------------------------------
+   0) "Bluebook Mode" açma düğmesi — mod KAPALIYKEN ve sadece bir soru
+      seti açıkken gösterilir (bluebook.js karar verir). Bu yüzden
+      .lux-bb kapsamının DIŞINDA tanımlı.
+   -------------------------------------------------------------------- */
+#lux-bb-toggle {
+  position: fixed !important;
+  right: 20px;
+  bottom: 20px;
+  z-index: 2147483000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 18px;
+  border: 1px solid var(--bb-line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--bb-navy);
+  font: 600 14px/1 var(--bb-sans);
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(14, 33, 68, 0.18);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+#lux-bb-toggle:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(14, 33, 68, 0.24);
+}
+#lux-bb-toggle .lux-bb-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, var(--bb-blue), var(--bb-navy));
+  display: inline-block;
+}
+
+/* ====================================================================
+   BURADAN AŞAĞISI SADECE MOD AÇIKKEN GEÇERLİ
+   ==================================================================== */
+
+/* --------------------------------------------------------------------
+   1) Zemin + sitenin kendi kabuğunu gizle
+   -------------------------------------------------------------------- */
+html.lux-bb,
+html.lux-bb body,
+html.lux-bb #app {
+  background: #fff !important;
+  color: var(--bb-ink) !important;
+  font-family: var(--bb-sans) !important;
+}
+html.lux-bb body {
+  padding-top: var(--bb-header-h) !important;
+  padding-bottom: var(--bb-footer-h) !important;
+}
+
+/* Tanıtım menüsü ve alt bilgi tamamen gizlenir */
+html.lux-bb nav,
+html.lux-bb footer {
+  display: none !important;
+}
+
+/* Sitenin kendi araç çubuğu: GÖRÜNMEZ ama DOM'da ve tıklanabilir kalır —
+   çünkü kendi Bluebook başlığımızdaki düğmeler bu gerçek kontrollere
+   programatik olarak tıklıyor (proxy). display:none yerine kırpma
+   kullanıyoruz ki popover/dialog bağlantıları bozulmasın. */
+html.lux-bb div.mb-3.overflow-x-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  clip-path: inset(50%) !important;
+  opacity: 0 !important;
+}
+
+/* Kart içindeki Submit / (Show explanation + Next) grubunu gizliyoruz;
+   bunları alt bardan proxy'liyoruz (Bluebook'ta da altta yer alırlar). */
+html.lux-bb main form button.btn-primary,
+html.lux-bb main div.join {
+  display: none !important;
+}
+
+/* --------------------------------------------------------------------
+   2) Üst bar (Bluebook başlığı) — açık lavanta zemin, kesik çizgi ayraç
+   -------------------------------------------------------------------- */
+.lux-bb-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--bb-header-h);
+  z-index: 2147482000;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 0 28px;
+  background: var(--bb-header);
+  border-bottom: 2px dashed #9aa3b8;
+  font-family: var(--bb-sans);
+  color: var(--bb-ink);
+  box-sizing: border-box;
+}
+
+.lux-bb-section {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--bb-ink);
+}
+.lux-bb-directions {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 2px;
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  color: var(--bb-ink);
+  font: 500 15px/1.2 var(--bb-sans);
+  cursor: pointer;
+}
+.lux-bb-directions:hover {
+  text-decoration: underline;
+}
+
+/* Orta: süre + Hide */
+.lux-bb-h-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.lux-bb-time {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.lux-bb-time.is-hidden {
+  visibility: hidden;
+}
+.lux-bb-hide {
+  padding: 4px 18px;
+  border: 1px solid var(--bb-navy);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--bb-ink);
+  font: 600 13px/1.4 var(--bb-sans);
+  cursor: pointer;
+}
+.lux-bb-hide:hover {
+  background: var(--bb-tint);
+}
+
+/* Sağ: araçlar */
+.lux-bb-h-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 26px;
+}
+.lux-bb-tool {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  background: none;
+  color: var(--bb-ink);
+  font: 500 13px/1.2 var(--bb-sans);
+  cursor: pointer;
+  padding: 4px 2px;
+  border-radius: 6px;
+}
+.lux-bb-tool:hover {
+  background: rgba(14, 33, 68, 0.07);
+}
+/* display:flex, [hidden] varsayılanını ezdiği için açıkça gizliyoruz
+   (Calculator düğmesi sadece matematik sorularında görünür) */
+.lux-bb-tool[hidden] {
+  display: none !important;
+}
+.lux-bb-tool.is-active {
+  color: var(--bb-blue);
+  font-weight: 700;
+}
+.lux-bb-tool svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+.lux-bb-tool .lux-bb-x2 {
+  font: 700 18px/1 var(--bb-serif);
+  height: 22px;
+  display: flex;
+  align-items: center;
+}
+
+/* --------------------------------------------------------------------
+   3) İçerik alanı — tek panel (matematik) veya iki panel (okuma) düzeni
+   -------------------------------------------------------------------- */
+html.lux-bb div:has(> div > main) {
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+html.lux-bb div:has(> main) {
+  display: flex !important;
+  align-items: stretch !important;
+  gap: 0 !important;
+  max-width: 1400px !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+}
+
+html.lux-bb main {
+  background: #fff !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 26px 44px 40px !important;
+  width: 100% !important;
+  max-width: 780px !important;
+  margin: 0 auto !important;
+}
+
+/* İki panel modunda: sol parça | sağ soru */
+html.lux-bb.lux-bb-split div:has(> main) {
+  max-width: none !important;
+}
+html.lux-bb.lux-bb-split main {
+  flex: 1 1 50% !important;
+  max-width: none !important;
+  border-left: 1px solid var(--bb-line) !important;
+  padding: 26px 44px 40px !important;
+}
+.lux-bb-passage {
+  flex: 1 1 50%;
+  padding: 26px 44px 40px;
+  font-family: var(--bb-serif);
+  font-size: 19px;
+  line-height: 1.62;
+  color: var(--bb-ink);
+  overflow-y: auto;
+  max-height: calc(100vh - var(--bb-header-h) - var(--bb-footer-h));
+  box-sizing: border-box;
+}
+.lux-bb-passage p {
+  margin: 0 0 16px 0;
+}
+/* Bölünmüş modda soru kökünün parçaya giden kısmı sağ panelde tekrar
+   görünmesin; sadece son blok (asıl soru cümlesi) sağda kalır. */
+html.lux-bb.lux-bb-split main .explanation_content > *:not(:last-child) {
+  display: none !important;
+}
+
+/* Soru üstü şerit: numara + Mark for Review + ABC */
+.lux-bb-qstrip {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  margin: 0 0 22px 0;
+  border-bottom: 2px dashed #9aa3b8;
+  background: #f3f4f8;
+}
+.lux-bb-qnum {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  padding: 6px 10px;
+  background: var(--bb-navy);
+  color: #fff;
+  font: 700 16px/1 var(--bb-sans);
+}
+.lux-bb-strip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border: 0;
+  background: none;
+  color: var(--bb-ink);
+  font: 500 14px/1 var(--bb-sans);
+  cursor: pointer;
+}
+.lux-bb-strip-btn:hover {
+  background: rgba(14, 33, 68, 0.06);
+}
+.lux-bb-strip-btn.is-active {
+  color: var(--bb-blue);
+  font-weight: 700;
+}
+.lux-bb-strip-btn svg {
+  width: 17px;
+  height: 17px;
+}
+.lux-bb-strip-abc {
+  margin-left: auto;
+  font: 700 13px/1 var(--bb-sans);
+  letter-spacing: 0.5px;
+  text-decoration: line-through;
+  border-left: 1px solid var(--bb-line);
+}
+
+/* --------------------------------------------------------------------
+   4) Soru metni ve şıklar (Bluebook tipografisi: serif)
+   -------------------------------------------------------------------- */
+html.lux-bb main .explanation_content {
+  font-family: var(--bb-serif) !important;
+  font-size: 19px !important;
+  line-height: 1.62 !important;
+  color: var(--bb-ink) !important;
+  margin-bottom: 26px !important;
+}
+html.lux-bb main .explanation_content p {
+  margin: 0 0 14px 0 !important;
+}
+html.lux-bb .explanation_content mjx-container,
+html.lux-bb .answer_content mjx-container,
+html.lux-bb .lux-bb-passage mjx-container {
+  color: inherit !important;
+  vertical-align: middle !important;
+}
+
+/* Şık listesi */
+html.lux-bb main form fieldset {
+  counter-reset: bb-choice;
+  gap: 13px !important;
+  border: 0 !important;
+  padding: 0 !important;
+}
+/* DİKKAT: burada align-items:center KULLANMIYORUZ. Eleme (cross out)
+   düğmesi <label class="btn h-auto"> ve içindeki ikon "h-1/3" olduğu için
+   yüksekliğini satırdan alır; center yapılırsa yükseklik çöker ve düğme
+   görünmez/tıklanamaz hale gelir. stretch ile şıkla aynı boyda kalır. */
+html.lux-bb main form fieldset > div.flex.gap-3.w-full {
+  counter-increment: bb-choice;
+  align-items: stretch !important;
+}
+
+/* Şık kutusu: dikey, geniş, kenarlıklı */
+html.lux-bb main form label.label {
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+  width: 100% !important;
+  min-height: 58px !important;
+  padding: 14px 20px !important;
+  border: 1px solid var(--bb-box) !important;
+  border-radius: 9px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+  transition: border-color 0.14s ease, box-shadow 0.14s ease !important;
+}
+html.lux-bb main form label.label:hover {
+  border-color: var(--bb-blue) !important;
+  box-shadow: 0 0 0 1px var(--bb-blue) !important;
+}
+html.lux-bb main form label.label:has(input:checked) {
+  border-color: var(--bb-blue) !important;
+  box-shadow: 0 0 0 2px var(--bb-blue) !important;
+}
+
+/* Native radio: görünmez ama işlevsel (label tıklaması onu tetikler) */
+html.lux-bb main form label.label input.radio {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  margin: 0 !important;
+}
+
+/* A / B / C / D harf rozeti */
+html.lux-bb main form label.label::before {
+  content: counter(bb-choice, upper-alpha);
+  flex: 0 0 auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 30px !important;
+  height: 30px !important;
+  border: 1px solid var(--bb-ink) !important;
+  border-radius: 50% !important;
+  color: var(--bb-ink) !important;
+  background: transparent !important;
+  font: 600 15px/1 var(--bb-sans) !important;
+}
+html.lux-bb main form label.label:has(input:checked)::before {
+  background: var(--bb-blue) !important;
+  border-color: var(--bb-blue) !important;
+  color: #fff !important;
+}
+
+html.lux-bb main form .answer_content {
+  font-family: var(--bb-serif) !important;
+  font-size: 18px !important;
+  line-height: 1.5 !important;
+  color: var(--bb-ink) !important;
+}
+html.lux-bb main form .answer_content p {
+  margin: 0 !important;
+}
+
+/* --- Cevap eleme (Cross out answers) ---------------------------------
+   "ABC" açıldığında site her şıkkın yanına şunu ekliyor:
+   <label class="btn h-auto p-0"><input type="checkbox" hidden><span X/></label>
+   Bunu Bluebook'un eleme düğmesi görünümüne sokuyoruz. */
+html.lux-bb main form fieldset > div > label.btn {
+  flex: 0 0 48px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 58px !important;
+  height: auto !important;
+  padding: 0 !important;
+  border: 1px solid var(--bb-box) !important;
+  border-radius: 9px !important;
+  background: #fff !important;
+  color: var(--bb-ink) !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+}
+html.lux-bb main form fieldset > div > label.btn:hover {
+  border-color: var(--bb-blue) !important;
+  color: var(--bb-blue) !important;
+}
+/* İkon "w-1/3 h-1/3" ile ebeveyn boyutuna bağlı; sabitliyoruz.
+   Simge mask + currentColor ile boyanıyor. */
+html.lux-bb main form fieldset > div > label.btn span {
+  width: 18px !important;
+  height: 18px !important;
+  background-color: currentColor !important;
+}
+/* Elenmiş şık: düğme dolu, metin üstü çizili ve soluk */
+html.lux-bb main form fieldset > div:has(> label.btn input:checked) > label.btn {
+  background: var(--bb-navy) !important;
+  border-color: var(--bb-navy) !important;
+  color: #fff !important;
+}
+html.lux-bb main form fieldset > div:has(> label.btn input:checked) > label.label {
+  opacity: 0.55 !important;
+  border-style: dashed !important;
+}
+html.lux-bb
+  main
+  form
+  fieldset
+  > div:has(> label.btn input:checked)
+  > label.label
+  .answer_content,
+html.lux-bb
+  main
+  form
+  fieldset
+  > div:has(> label.btn input:checked)
+  > label.label::before {
+  text-decoration: line-through !important;
+}
+
+/* Cevap gönderildikten sonra sitenin işaretlediği doğru/yanlış durumları */
+html.lux-bb main form label.label.bg-green-500\/20 {
+  border-color: #1e874b !important;
+  box-shadow: 0 0 0 2px #1e874b !important;
+  background: #eefaf1 !important;
+}
+html.lux-bb main form label.label.bg-red-500\/20 {
+  border-color: #c0392b !important;
+  box-shadow: 0 0 0 2px #c0392b !important;
+  background: #fdeeec !important;
+}
+
+/* --------------------------------------------------------------------
+   5) Alt bar — isim | Question X of Y | Explanation + Check/Next
+   -------------------------------------------------------------------- */
+.lux-bb-footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--bb-footer-h);
+  z-index: 2147482000;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 0 28px;
+  background: #fff;
+  border-top: 2px dashed #9aa3b8;
+  font-family: var(--bb-sans);
+  box-sizing: border-box;
+}
+.lux-bb-brand {
+  font: 700 19px/1 var(--bb-sans);
+  color: var(--bb-ink);
+}
+.lux-bb-qpill {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 22px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--bb-navy);
+  color: #fff;
+  font: 700 15px/1 var(--bb-sans);
+  cursor: pointer;
+}
+.lux-bb-qpill:hover {
+  background: #17305e;
+}
+.lux-bb-f-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+.lux-bb-primary {
+  padding: 13px 34px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--bb-blue);
+  color: #fff;
+  font: 700 15px/1 var(--bb-sans);
+  cursor: pointer;
+}
+.lux-bb-primary:hover {
+  background: var(--bb-blue-dark);
+}
+.lux-bb-secondary {
+  padding: 12px 22px;
+  border: 1px solid var(--bb-blue);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--bb-blue);
+  font: 600 14px/1 var(--bb-sans);
+  cursor: pointer;
+}
+.lux-bb-secondary:hover {
+  background: var(--bb-tint);
+}
+.lux-bb-secondary[disabled] {
+  border-color: var(--bb-box);
+  color: #98a0b2;
+  cursor: not-allowed;
+  background: #f5f6f9;
+}
+
+/* Sitenin soru listesi popover'ı: Bluebook'taki gibi alt barın üstünde,
+   ortada açılsın (kendi anchor konumlandırmasını iptal ediyoruz). */
+html.lux-bb #questionlist {
+  position: fixed !important;
+  position-anchor: none !important;
+  inset: auto auto calc(var(--bb-footer-h) + 12px) 50% !important;
+  transform: translateX(-50%) !important;
+  margin: 0 !important;
+  width: 280px !important;
+  max-height: 340px !important;
+  overflow: auto !important;
+  background: #fff !important;
+  color: var(--bb-ink) !important;
+  border: 1px solid var(--bb-line) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 30px rgba(14, 33, 68, 0.22) !important;
+  padding: 8px !important;
+}
+
+/* --------------------------------------------------------------------
+   6) Açılır paneller (Directions / Highlights & Notes / More)
+   -------------------------------------------------------------------- */
+.lux-bb-panel {
+  position: fixed;
+  z-index: 2147483000;
+  min-width: 230px;
+  max-width: 360px;
+  padding: 14px 16px;
+  background: #fff;
+  border: 1px solid var(--bb-line);
+  border-radius: 12px;
+  box-shadow: 0 12px 34px rgba(14, 33, 68, 0.22);
+  font: 14px/1.5 var(--bb-sans);
+  color: var(--bb-ink);
+}
+.lux-bb-panel[hidden] {
+  display: none;
+}
+.lux-bb-panel h4 {
+  margin: 0 0 8px 0;
+  font: 700 14px/1.3 var(--bb-sans);
+}
+.lux-bb-panel dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+}
+.lux-bb-panel dt {
+  color: var(--bb-muted);
+}
+.lux-bb-panel dd {
+  margin: 0;
+  font-weight: 600;
+}
+.lux-bb-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--bb-ink);
+  font: 500 14px/1 var(--bb-sans);
+  text-align: left;
+  cursor: pointer;
+}
+.lux-bb-menu-item:hover {
+  background: var(--bb-tint);
+}
+.lux-bb-menu-item.is-active {
+  color: var(--bb-blue);
+  font-weight: 700;
+}
+
+/* Vurgu renkleri paleti */
+.lux-bb-swatches {
+  display: flex;
+  gap: 8px;
+  margin: 4px 0 10px;
+}
+.lux-bb-swatch {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid rgba(14, 33, 68, 0.25);
+  cursor: pointer;
+}
+.lux-bb-swatch:hover {
+  transform: scale(1.08);
+}
+.lux-bb-hint {
+  margin: 8px 0 0;
+  color: var(--bb-muted);
+  font-size: 12.5px;
+}
+
+/* --------------------------------------------------------------------
+   7) Hesap makinesi (sitenin Desmos iframe'i) — Bluebook'taki gibi
+      sağa yaslanmış bir panel olarak açılır/kapanır
+   -------------------------------------------------------------------- */
+html.lux-bb main ~ iframe {
+  display: none !important;
+}
+
+/* Hesap makinesi açıkken SORUNUN ÜSTÜNÜ KAPATMAZ: üste binen (fixed) bir
+   katman değil, akışta gerçek bir sütun olur — soru sütunu daralır, ikisi
+   yan yana durur. Sayfa kaydırılırken görünür kalsın diye sticky. */
+html.lux-bb.lux-bb-calc div:has(> main) {
+  max-width: none !important;
+  align-items: flex-start !important;
+  gap: 18px !important;
+  padding: 0 18px !important;
+}
+html.lux-bb.lux-bb-calc main {
+  flex: 1 1 auto !important;
+  margin: 0 auto !important;
+}
+html.lux-bb.lux-bb-calc main ~ iframe {
+  display: block !important;
+  position: sticky !important;
+  top: calc(var(--bb-header-h) + 14px) !important;
+  align-self: flex-start !important;
+  flex: 0 0 min(560px, 44%) !important;
+  height: calc(100vh - var(--bb-header-h) - var(--bb-footer-h) - 28px) !important;
+  background: #fff !important;
+  border: 1px solid var(--bb-line) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 26px rgba(14, 33, 68, 0.18) !important;
+}
+
+/* --------------------------------------------------------------------
+   8) Lux Highlighter uyumluluğu
+      Bu dosyada soru/parça metnine background veren HİÇBİR !important
+      kural yok — böylece Lux'un vurgu span'lerindeki satır-içi
+      background-color her zaman görünür kalır.
+   -------------------------------------------------------------------- */
+html.lux-bb main,
+html.lux-bb .lux-bb-passage,
+html.lux-bb .lux-bb-passage *,
+html.lux-bb .explanation_content,
+html.lux-bb .explanation_content *,
+html.lux-bb .answer_content,
+html.lux-bb .answer_content * {
+  -webkit-user-select: text !important;
+  user-select: text !important;
+}
+.my-ext-highlight {
+  border-radius: 2px !important;
+  box-decoration-break: clone !important;
+  -webkit-box-decoration-break: clone !important;
+}
+
+/* --------------------------------------------------------------------
+   9) Dar ekranlar
+   -------------------------------------------------------------------- */
+@media (max-width: 900px) {
+  html.lux-bb.lux-bb-split div:has(> main) {
+    flex-direction: column !important;
+  }
+  html.lux-bb.lux-bb-split main {
+    border-left: 0 !important;
+    border-top: 1px solid var(--bb-line) !important;
+  }
+  .lux-bb-passage {
+    max-height: none;
+  }
+  .lux-bb-h-right {
+    gap: 14px;
+  }
+  .lux-bb-tool span:not(.lux-bb-x2) {
+    display: none;
+  }
+}
