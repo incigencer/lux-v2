@@ -67,7 +67,18 @@
     chevronDown:
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
     chevronUp:
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>'
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>',
+    // "Bluebook Mode" düğmesindeki logo: mavi kare üzerinde beyaz imleç
+    // + iki küçük üçgen. Dosya/izin gerekmemesi için inline SVG olarak
+    // çizildi; köşe yuvarlaklıkları stroke-linejoin:round ile veriliyor.
+    bluebookLogo:
+      '<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+      '<rect width="400" height="400" fill="#3a4cc8"/>' +
+      '<g fill="#fff" stroke="#fff" stroke-linejoin="round">' +
+      '<path d="M150 54 L338 268 L170 352 Z" stroke-width="15"/>' +
+      '<path d="M256 126 L320 92 L288 168 Z" stroke-width="12"/>' +
+      '<path d="M54 212 L140 172 L140 234 Z" stroke-width="12"/>' +
+      "</g></svg>"
   };
 
   // Lux'un vurgu renkleri (content.js ile aynı paleti kullanıyoruz)
@@ -184,7 +195,9 @@
     chip = el("button");
     chip.id = "lux-bb-toggle";
     chip.type = "button";
-    chip.appendChild(el("span", "lux-bb-dot"));
+    var logo = el("span", "lux-bb-dot");
+    logo.innerHTML = SVG.bluebookLogo;
+    chip.appendChild(logo);
     chip.appendChild(el("span", null, "Bluebook Mode"));
     chip.addEventListener("click", enable);
     document.body.appendChild(chip);

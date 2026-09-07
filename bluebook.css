@@ -54,12 +54,19 @@
   transform: translateY(-1px);
   box-shadow: 0 6px 20px rgba(14, 33, 68, 0.24);
 }
+/* Bluebook logosu (inline SVG, bluebook.js içinde) */
 #lux-bb-toggle .lux-bb-dot {
   width: 22px;
   height: 22px;
-  border-radius: 6px;
-  background: linear-gradient(135deg, var(--bb-blue), var(--bb-navy));
-  display: inline-block;
+  flex: 0 0 auto;
+  border-radius: 5px;
+  overflow: hidden;
+  display: inline-flex;
+}
+#lux-bb-toggle .lux-bb-dot svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 /* ====================================================================
@@ -380,7 +387,12 @@ html.lux-bb main form label.label {
   padding: 14px 20px !important;
   border: 1px solid var(--bb-box) !important;
   border-radius: 9px !important;
-  background: #fff !important;
+  /* DİKKAT: kısayol `background` DEĞİL, `background-color` kullanıyoruz.
+     Site, elenen şıkkın üstünü çizmek için bu elemana inline
+     `background: linear-gradient(...)` yazıyor (MathJax SVG şıklarda
+     text-decoration işe yaramadığı için tek yol bu). Kısayolu !important
+     ile ezersek o çizgi kaybolur ve eleme "çalışmıyor" görünür. */
+  background-color: #fff !important;
   box-shadow: none !important;
   cursor: pointer !important;
   transition: border-color 0.14s ease, box-shadow 0.14s ease !important;
@@ -449,7 +461,7 @@ html.lux-bb main form fieldset > div > label.btn {
   padding: 0 !important;
   border: 1px solid var(--bb-box) !important;
   border-radius: 9px !important;
-  background: #fff !important;
+  background-color: #fff !important;
   color: var(--bb-ink) !important;
   box-shadow: none !important;
   cursor: pointer !important;
@@ -467,40 +479,29 @@ html.lux-bb main form fieldset > div > label.btn span {
 }
 /* Elenmiş şık: düğme dolu, metin üstü çizili ve soluk */
 html.lux-bb main form fieldset > div:has(> label.btn input:checked) > label.btn {
-  background: var(--bb-navy) !important;
+  background-color: var(--bb-navy) !important;
   border-color: var(--bb-navy) !important;
   color: #fff !important;
 }
+/* Elenen şık: soluk + kesik kenarlık. Üstünü çizen çizgiyi sitenin kendi
+   inline gradient'i çiziyor (yukarıdaki nota bakınız), biz text-decoration
+   EKLEMİYORUZ — aksi halde metin şıklarda çift çizgi olurdu ve SVG
+   (MathJax) şıklarda zaten hiç çalışmazdı. */
 html.lux-bb main form fieldset > div:has(> label.btn input:checked) > label.label {
   opacity: 0.55 !important;
   border-style: dashed !important;
-}
-html.lux-bb
-  main
-  form
-  fieldset
-  > div:has(> label.btn input:checked)
-  > label.label
-  .answer_content,
-html.lux-bb
-  main
-  form
-  fieldset
-  > div:has(> label.btn input:checked)
-  > label.label::before {
-  text-decoration: line-through !important;
 }
 
 /* Cevap gönderildikten sonra sitenin işaretlediği doğru/yanlış durumları */
 html.lux-bb main form label.label.bg-green-500\/20 {
   border-color: #1e874b !important;
   box-shadow: 0 0 0 2px #1e874b !important;
-  background: #eefaf1 !important;
+  background-color: #eefaf1 !important;
 }
 html.lux-bb main form label.label.bg-red-500\/20 {
   border-color: #c0392b !important;
   box-shadow: 0 0 0 2px #c0392b !important;
-  background: #fdeeec !important;
+  background-color: #fdeeec !important;
 }
 
 /* --------------------------------------------------------------------
@@ -697,6 +698,11 @@ html.lux-bb.lux-bb-calc div:has(> main) {
 html.lux-bb.lux-bb-calc main {
   flex: 1 1 auto !important;
   margin: 0 auto !important;
+}
+/* Hem parça paneli hem hesap makinesi açıksa üç sütun sığsın */
+html.lux-bb.lux-bb-calc.lux-bb-split .lux-bb-passage,
+html.lux-bb.lux-bb-calc.lux-bb-split main {
+  flex: 1 1 34% !important;
 }
 html.lux-bb.lux-bb-calc main ~ iframe {
   display: block !important;
