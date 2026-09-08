@@ -3,13 +3,13 @@
 </p>
 
 <h1 align="center">Lux</h1>
-<p align="center">Basit bir Chrome metin vurgulayıcı — ve satquestionbank.org için bir <strong>Bluebook Mode</strong>.</p>
+<p align="center">Basit bir Chrome &amp; Firefox metin vurgulayıcı — ve satquestionbank.org için bir <strong>Bluebook Mode</strong>.</p>
 
 ---
 
 ## Neler yapar?
 
-Lux, Manifest V3 ile yazılmış, kurulumu ve kullanımı basit bir Chrome uzantısıdır. İki bağımsız özelliği var:
+Lux, Manifest V3 ile yazılmış, kurulumu ve kullanımı basit, hem **Chrome** hem **Firefox**'ta çalışan bir tarayıcı uzantısıdır. İki bağımsız özelliği var:
 
 1. **Vurgulayıcı (her sitede):** Herhangi bir web sayfasında metin seçip sağ tık menüsünden veya klavye kısayoluyla renkli vurgulama yapabilirsiniz.
 2. **Bluebook Mode (sadece satquestionbank.org):** [satquestionbank.org](https://satquestionbank.org)'daki bir soru setini, College Board'un resmi dijital SAT uygulaması **Bluebook**'un arayüzüne benzer şekilde yeniden giydirir — üst/alt bar, Highlights & Notes, Calculator, Reference, Cross out answers gibi araçlarla.
@@ -38,16 +38,28 @@ Lux, Manifest V3 ile yazılmış, kurulumu ve kullanımı basit bir Chrome uzant
 
 ## Kurulum
 
-1. Bu klasörü bilgisayarınıza indirin/klonlayın.
-2. Chrome'da adres çubuğuna yazın:
+Bu klasörü bilgisayarınıza indirin/klonlayın, ardından tarayıcınıza göre:
+
+**Chrome (veya diğer Chromium tabanlılar):**
+1. Adres çubuğuna yazın:
    ```
    chrome://extensions
    ```
-3. Sağ üstten **Geliştirici modu**'nu (Developer mode) açın.
-4. **Paketlenmemiş öğe yükle** (Load unpacked) → bu klasörü seçin.
-5. "Lux" uzantı listesinde görünür.
+2. Sağ üstten **Geliştirici modu**'nu (Developer mode) açın.
+3. **Paketlenmemiş öğe yükle** (Load unpacked) → bu klasörü seçin.
+4. "Lux" uzantı listesinde görünür.
 
 Kod değiştikçe `chrome://extensions` sayfasındaki yenile (🔄) ikonuna basmanız yeterlidir.
+
+**Firefox:**
+1. Adres çubuğuna yazın:
+   ```
+   about:debugging#/runtime/this-firefox
+   ```
+2. **Geçici Eklenti Yükle...** (Load Temporary Add-on) → bu klasördeki `manifest.json`'ı seçin.
+3. "Lux" geçici eklentiler listesinde görünür.
+
+> Firefox 140 ve üzeri gerekir (`browser_specific_settings.gecko.strict_min_version`). Geçici olarak yüklenen eklentiler Firefox yeniden başlatıldığında kaldırılır — kalıcı kurulum için [addons.mozilla.org](https://addons.mozilla.org) üzerinden imzalanmış bir paket gerekir.
 
 ---
 
@@ -72,7 +84,7 @@ Kod değiştikçe `chrome://extensions` sayfasındaki yenile (🔄) ikonuna basm
 
 | Dosya | Görev |
 |---|---|
-| `manifest.json` | Manifest V3 tanımı, izinler, content script kuralları, klavye kısayolları |
+| `manifest.json` | Manifest V3 tanımı, izinler, content script kuralları, klavye kısayolları, Firefox (`browser_specific_settings.gecko`) ayarları |
 | `background.js` | Sağ tık menüsü + klavye kısayolu komutlarını yöneten servis çalışanı (service worker) |
 | `content.js` | Vurgulama/kaldırma/geri alma mantığı; her sitede çalışır |
 | `bluebook.css` | Bluebook Mode görünümü — tamamı `html.lux-bb` altında kapsanmış, mod kapalıyken siteye dokunmaz |
@@ -87,6 +99,7 @@ Kod değiştikçe `chrome://extensions` sayfasındaki yenile (🔄) ikonuna basm
 - **Seçici stratejisi (bluebook.css/js):** satquestionbank.org React + Tailwind/DaisyUI ile yazılı; kırılgan üretken class'lar yerine sitenin sabit/anlamlı sınıfları (`.explanation_content`, `.answer_content`, `.join`, `.label`) ve `:has()` ile yapısal konum kullanılıyor.
 - **Vurgulayıcı güvenliği:** `bluebook.css` içinde soru/parça metnine `background`'a `!important` ile dokunan hiçbir kural yok — bu sayede Lux'un vurgu span'lerindeki satır-içi `background-color` her zaman görünür kalıyor.
 - **Kalıcılık yok:** Vurgular sayfa yenilenince kaybolur (bilinçli bir sadelik tercihi). Bluebook Mode tercihi ise `localStorage`'da kalıcıdır.
+- **Chrome + Firefox uyumluluğu:** `manifest.json`'da `background` hem `service_worker` (Chrome) hem `scripts` (Firefox'un MV3 event page'i) alanlarını birlikte tanımlıyor; Firefox tarafı `browser_specific_settings.gecko` ile (id, minimum sürüm, "veri toplama yok" beyanı) tamamlanıyor. `bluebook.js`'deki ikonlar da AMO (addons.mozilla.org) inceleme gereksinimleri için `innerHTML` yerine `DOMParser` ile ayrıştırılıp DOM'a ekleniyor.
 
 ---
 
@@ -94,3 +107,4 @@ Kod değiştikçe `chrome://extensions` sayfasındaki yenile (🔄) ikonuna basm
 
 - Vurgular sayfalar arası/yenilemeler arası saklanmıyor.
 - Bluebook Mode yalnızca satquestionbank.org için tasarlandı; site kendi DOM yapısını önemli ölçüde değiştirirse seçicilerin güncellenmesi gerekebilir.
+- Firefox 140'ın altındaki sürümlerde çalışması garanti değildir; "Geçici Eklenti Yükle" ile kurulanlar tarayıcı yeniden başlatılınca kaldırılır.
