@@ -1,110 +1,112 @@
 <p align="center">
-  <img src="icons/icon128.png" width="96" height="96" alt="Lux logosu">
+  <img src="icons/icon128.png" width="96" height="96" alt="Lux logo">
 </p>
 
 <h1 align="center">Lux</h1>
-<p align="center">Basit bir Chrome &amp; Firefox metin vurgulayıcı — ve satquestionbank.org için bir <strong>Bluebook Mode</strong>.</p>
+<p align="center">A simple text highlighter for Chrome &amp; Firefox — plus a <strong>Bluebook Mode</strong> for satquestionbank.org.</p>
 
 ---
 
-## Neler yapar?
+## What it does
 
-Lux, Manifest V3 ile yazılmış, kurulumu ve kullanımı basit, hem **Chrome** hem **Firefox**'ta çalışan bir tarayıcı uzantısıdır. İki bağımsız özelliği var:
+Lux is a Manifest V3 browser extension that's easy to install and use, and runs on both **Chrome** and **Firefox**. It has two independent features:
 
-1. **Vurgulayıcı (her sitede):** Herhangi bir web sayfasında metin seçip sağ tık menüsünden veya klavye kısayoluyla renkli vurgulama yapabilirsiniz.
-2. **Bluebook Mode (sadece satquestionbank.org):** [satquestionbank.org](https://satquestionbank.org)'daki bir soru setini, College Board'un resmi dijital SAT uygulaması **Bluebook**'un arayüzüne benzer şekilde yeniden giydirir — üst/alt bar, Highlights & Notes, Calculator, Reference, Cross out answers gibi araçlarla.
+1. **Highlighter (any site):** Select text on any web page and highlight it in color from the right-click menu or with a keyboard shortcut.
+2. **Bluebook Mode (satquestionbank.org only):** Reskins a question set on [satquestionbank.org](https://satquestionbank.org) to look like **Bluebook**, College Board's official digital SAT app — with a top/bottom bar and tools like Highlights & Notes, Calculator, Reference, and Cross out answers.
 
 ---
 
-## Özellikler
+## Features
 
-### 🖍️ Vurgulayıcı
-- Metin seçince sağ tık menüsünde **Vurgula** → 6 renk (Sarı, Mavi, Pembe, Yeşil, Turuncu, Mor)
-- **Ctrl+Shift+H** — seçili metni son kullanılan renkle vurgular
-- **Ctrl+Shift+Z** — en son eklenen vurguyu geri alır (seçim yapmaya gerek yok)
-- Bir metni seçtiğinizde (vurgulu olsun olmasın) sağ tık → **Vurguyu Kaldır**, seçim aralığındaki **tüm** vurguları tek seferde kaldırır
-- `iframe` içeren sayfalarda da çalışır (`all_frames: true` + doğru çerçeveye mesaj gönderimi)
-- Uzantı güncellenip yeniden yüklendiğinde, zaten açık olan sekmelerde de otomatik kendini onarır (`chrome.scripting.executeScript` ile gerektiğinde yeniden enjekte olur)
+### 🖍️ Highlighter
+- Select text → right-click → **Vurgula** (Highlight) → 6 colors (yellow, blue, pink, green, orange, purple)
+- **Ctrl+Shift+H** — highlights the selection with the last-used color
+- **Ctrl+Shift+Z** — undoes the most recent highlight (no selection needed)
+- Select any text (highlighted or not) → right-click → **Vurguyu Kaldır** (Remove highlight) removes **every** highlight inside the selection at once
+- Works on pages with `iframe`s (`all_frames: true` + messages routed to the correct frame)
+- Self-heals in tabs that were already open when the extension was updated or reloaded (re-injects itself via `chrome.scripting.executeScript` when needed)
+
+> The context-menu labels are currently in Turkish.
 
 ### 📘 Bluebook Mode
-- Sadece bir **soru seti** açıkken (`satquestionbank.org/question/...?set=...`) sağ altta beliren bir düğmeyle açılıp kapanır; ana sayfada veya normal gezinmede hiç görünmez
-- Tercih `localStorage`'da tutulur, bir sonraki soruda kaldığı yerden devam eder
-- Sitenin **kendi** araçlarını (Mark for Review, Cross out answers, Shuffle, soru listesi, Desmos hesap makinesi, SAT referans sayfası) siler/taşımaz — sadece görünmez yapıp kendi Bluebook arayüzünden programatik olarak tetikler
-- Okuma parçalı sorularda otomatik olarak iki panele (sol: parça, sağ: soru) bölünür
-- Hesap makinesi açıldığında soru metnini **örtmez**; sayfa akışında yan yana bir sütun olarak açılır
-- Cevap eleme (ABC) düğmeleri, MathJax (SVG) şıklarda dahi doğru görünür
+- Toggled with a button in the bottom-right corner that appears **only** while a question set is open (`satquestionbank.org/question/...?set=...`); it never shows on the home page or during normal browsing
+- The preference is stored in `localStorage`, so it stays on for the next question
+- Doesn't remove or move the site's **own** tools (Mark for Review, Cross out answers, Shuffle, the question list, the Desmos calculator, the SAT reference sheet) — it hides them and triggers them programmatically from its own Bluebook-style UI
+- Questions with a reading passage are automatically split into two panes (left: passage, right: question)
+- Opening the calculator **doesn't cover** the question; it opens as a side-by-side column in the page flow
+- Answer-elimination (ABC) buttons render correctly, even on MathJax (SVG) answer choices
 
 ---
 
-## Kurulum
+## Installation
 
-Bu klasörü bilgisayarınıza indirin/klonlayın, ardından tarayıcınıza göre:
+Download or clone this folder, then follow the steps for your browser:
 
-**Chrome (veya diğer Chromium tabanlılar):**
-1. Adres çubuğuna yazın:
+**Chrome (or other Chromium-based browsers):**
+1. Go to:
    ```
    chrome://extensions
    ```
-2. Sağ üstten **Geliştirici modu**'nu (Developer mode) açın.
-3. **Paketlenmemiş öğe yükle** (Load unpacked) → bu klasörü seçin.
-4. "Lux" uzantı listesinde görünür.
+2. Turn on **Developer mode** in the top-right corner.
+3. Click **Load unpacked** → select this folder.
+4. "Lux" appears in the extensions list.
 
-Kod değiştikçe `chrome://extensions` sayfasındaki yenile (🔄) ikonuna basmanız yeterlidir.
+After changing the code, just click the reload (🔄) icon on the `chrome://extensions` page.
 
 **Firefox:**
-1. Adres çubuğuna yazın:
+1. Go to:
    ```
    about:debugging#/runtime/this-firefox
    ```
-2. **Geçici Eklenti Yükle...** (Load Temporary Add-on) → bu klasördeki `manifest.json`'ı seçin.
-3. "Lux" geçici eklentiler listesinde görünür.
+2. Click **Load Temporary Add-on...** → select `manifest.json` in this folder.
+3. "Lux" appears in the temporary extensions list.
 
-> Firefox 140 ve üzeri gerekir (`browser_specific_settings.gecko.strict_min_version`). Geçici olarak yüklenen eklentiler Firefox yeniden başlatıldığında kaldırılır — kalıcı kurulum için [addons.mozilla.org](https://addons.mozilla.org) üzerinden imzalanmış bir paket gerekir.
-
----
-
-## Kullanım
-
-**Herhangi bir sitede:**
-1. Bir metni seçin.
-2. Sağ tık → **Vurgula** → bir renk seçin (ya da `Ctrl+Shift+H`).
-3. Kaldırmak için: metni tekrar seçip sağ tık → **Vurguyu Kaldır** (ya da `Ctrl+Shift+Z` ile son vurguyu geri alın).
-
-> Kısayollar çalışmıyorsa `chrome://extensions/shortcuts` sayfasından "Lux" için atanmış olduklarını kontrol edin.
-
-**satquestionbank.org'da:**
-1. Bir soru seti açın (Find Questions ile).
-2. Sağ altta çıkan **Bluebook Mode** düğmesine tıklayın.
-3. Üst bardaki *Highlights & Notes*, *Calculator*, *Reference*, *More* araçlarını kullanın.
-4. Kapatmak için: **More → Turn off Bluebook Mode**.
+> Requires Firefox 140 or later (`browser_specific_settings.gecko.strict_min_version`). Temporary add-ons are removed when Firefox restarts — a permanent install requires a package signed through [addons.mozilla.org](https://addons.mozilla.org).
 
 ---
 
-## Dosya yapısı
+## Usage
 
-| Dosya | Görev |
+**On any site:**
+1. Select some text.
+2. Right-click → **Vurgula** → pick a color (or press `Ctrl+Shift+H`).
+3. To remove: select the text again → right-click → **Vurguyu Kaldır** (or press `Ctrl+Shift+Z` to undo the last highlight).
+
+> If the shortcuts don't work, check that they're assigned to "Lux" on `chrome://extensions/shortcuts`.
+
+**On satquestionbank.org:**
+1. Open a question set (via Find Questions).
+2. Click the **Bluebook Mode** button in the bottom-right corner.
+3. Use the *Highlights & Notes*, *Calculator*, *Reference*, and *More* tools in the top bar.
+4. To turn it off: **More → Turn off Bluebook Mode**.
+
+---
+
+## File structure
+
+| File | Purpose |
 |---|---|
-| `manifest.json` | Manifest V3 tanımı, izinler, content script kuralları, klavye kısayolları, Firefox (`browser_specific_settings.gecko`) ayarları |
-| `background.js` | Sağ tık menüsü + klavye kısayolu komutlarını yöneten servis çalışanı (service worker) |
-| `content.js` | Vurgulama/kaldırma/geri alma mantığı; her sitede çalışır |
-| `bluebook.css` | Bluebook Mode görünümü — tamamı `html.lux-bb` altında kapsanmış, mod kapalıyken siteye dokunmaz |
-| `bluebook.js` | Bluebook Mode'un tespiti, aç/kapa, kendi kabuğu (üst/alt bar, paneller) ve sitenin araçlarına proxy |
-| `icons/` | Uzantı ikonları (16/32/48/128 px) |
+| `manifest.json` | Manifest V3 definition: permissions, content-script rules, keyboard shortcuts, Firefox settings (`browser_specific_settings.gecko`) |
+| `background.js` | Service worker that handles the right-click menu and keyboard-shortcut commands |
+| `content.js` | Highlight / remove / undo logic; runs on every site |
+| `bluebook.css` | Bluebook Mode styling — fully scoped under `html.lux-bb`, so it doesn't touch the site while the mode is off |
+| `bluebook.js` | Bluebook Mode detection, on/off toggle, its own shell (top/bottom bar, panels), and proxies to the site's tools |
+| `icons/` | Extension icons (16/32/48/128 px) |
 
 ---
 
-## Teknik notlar
+## Technical notes
 
-- **İzinler:** `contextMenus`, `activeTab`, `scripting` — hiçbiri geniş kapsamlı host izni gerektirmiyor; `scripting` sadece kullanıcı jestiyle (sağ tık / kısayol) tetiklenen `activeTab` erişimiyle kullanılıyor.
-- **Seçici stratejisi (bluebook.css/js):** satquestionbank.org React + Tailwind/DaisyUI ile yazılı; kırılgan üretken class'lar yerine sitenin sabit/anlamlı sınıfları (`.explanation_content`, `.answer_content`, `.join`, `.label`) ve `:has()` ile yapısal konum kullanılıyor.
-- **Vurgulayıcı güvenliği:** `bluebook.css` içinde soru/parça metnine `background`'a `!important` ile dokunan hiçbir kural yok — bu sayede Lux'un vurgu span'lerindeki satır-içi `background-color` her zaman görünür kalıyor.
-- **Kalıcılık yok:** Vurgular sayfa yenilenince kaybolur (bilinçli bir sadelik tercihi). Bluebook Mode tercihi ise `localStorage`'da kalıcıdır.
-- **Chrome + Firefox uyumluluğu:** `manifest.json`'da `background` hem `service_worker` (Chrome) hem `scripts` (Firefox'un MV3 event page'i) alanlarını birlikte tanımlıyor; Firefox tarafı `browser_specific_settings.gecko` ile (id, minimum sürüm, "veri toplama yok" beyanı) tamamlanıyor. `bluebook.js`'deki ikonlar da AMO (addons.mozilla.org) inceleme gereksinimleri için `innerHTML` yerine `DOMParser` ile ayrıştırılıp DOM'a ekleniyor.
+- **Permissions:** `contextMenus`, `activeTab`, `scripting` — none of them require broad host permissions; `scripting` is only used through `activeTab` access granted by a user gesture (right-click / shortcut).
+- **Selector strategy (bluebook.css/js):** satquestionbank.org is built with React + Tailwind/DaisyUI; instead of fragile generated class names, Lux targets the site's stable, meaningful classes (`.explanation_content`, `.answer_content`, `.join`, `.label`) and structural position via `:has()`.
+- **Highlighter safety:** No rule in `bluebook.css` sets `background` with `!important` on question/passage text — so the inline `background-color` on Lux's highlight spans always stays visible.
+- **No persistence:** Highlights disappear when the page reloads (a deliberate simplicity choice). The Bluebook Mode preference, however, persists in `localStorage`.
+- **Chrome + Firefox compatibility:** In `manifest.json`, `background` defines both `service_worker` (Chrome) and `scripts` (Firefox's MV3 event page); the Firefox side is completed with `browser_specific_settings.gecko` (ID, minimum version, "no data collection" declaration). To meet AMO (addons.mozilla.org) review requirements, the icons in `bluebook.js` are parsed with `DOMParser` and added to the DOM instead of using `innerHTML`.
 
 ---
 
-## Bilinen sınırlar
+## Known limitations
 
-- Vurgular sayfalar arası/yenilemeler arası saklanmıyor.
-- Bluebook Mode yalnızca satquestionbank.org için tasarlandı; site kendi DOM yapısını önemli ölçüde değiştirirse seçicilerin güncellenmesi gerekebilir.
-- Firefox 140'ın altındaki sürümlerde çalışması garanti değildir; "Geçici Eklenti Yükle" ile kurulanlar tarayıcı yeniden başlatılınca kaldırılır.
+- Highlights aren't saved across pages or reloads.
+- Bluebook Mode is designed only for satquestionbank.org; if the site significantly changes its DOM structure, the selectors may need updating.
+- Not guaranteed to work on Firefox versions below 140; add-ons installed via "Load Temporary Add-on" are removed when the browser restarts.
