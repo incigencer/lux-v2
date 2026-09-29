@@ -5,14 +5,20 @@
       "id": "lux@incigencer",
       "strict_min_version": "140.0",
       "data_collection_permissions": {
-        "required": ["none"]
+        "required": [
+          "none"
+        ]
       }
     }
   },
   "name": "Lux",
-  "version": "1.4",
+  "version": "1.5",
   "description": "Seçtiğiniz metni sağ tık menüsünden veya klavye kısayoluyla renkli vurgulayın; kısayolla geri alın.",
-  "permissions": ["contextMenus", "activeTab", "scripting"],
+  "permissions": [
+    "contextMenus",
+    "activeTab",
+    "scripting"
+  ],
   "icons": {
     "16": "icons/icon16.png",
     "32": "icons/icon32.png",
@@ -30,27 +36,58 @@
   },
   "background": {
     "service_worker": "background.js",
-    "scripts": ["background.js"]
+    "scripts": [
+      "background.js"
+    ]
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["content.js"],
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content.js"
+      ],
       "all_frames": true
     },
     {
-      "matches": ["https://satquestionbank.org/*", "https://www.satquestionbank.org/*"],
-      "css": ["bluebook.css"],
-      "js": ["bluebook.js"]
+      "matches": [
+        "https://satquestionbank.org/*",
+        "https://www.satquestionbank.org/*"
+      ],
+      "css": [
+        "bluebook.css"
+      ],
+      "js": [
+        "bluebook.js"
+      ]
+    },
+    {
+      "matches": [
+        "https://www.khanacademy.org/*",
+        "https://khanacademy.org/*"
+      ],
+      "css": [
+        "khan.css"
+      ],
+      "js": [
+        "khan.js"
+      ]
     }
   ],
   "commands": {
     "highlight-selection": {
-      "suggested_key": { "default": "Ctrl+Shift+H" },
+      "suggested_key": {
+        "default": "Ctrl+Shift+H",
+        "mac": "MacCtrl+Shift+H"
+      },
       "description": "Seçili metni son kullanılan renkle vurgula"
     },
     "undo-highlight": {
-      "suggested_key": { "default": "Ctrl+Shift+Z" },
+      "suggested_key": {
+        "default": "Ctrl+Shift+Z",
+        "mac": "MacCtrl+Shift+Z"
+      },
       "description": "Son vurgulamayı geri al"
     }
   }

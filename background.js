@@ -115,7 +115,8 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   }
 });
 
-// Klavye kısayolları: Ctrl+Shift+H (vurgula) ve Ctrl+Shift+Z (geri al).
+// Klavye kısayolları: Ctrl+Shift+H (vurgula) ve Ctrl+Shift+Z (geri al);
+// Mac'te Control+Shift+H / Control+Shift+Z (manifest'te "MacCtrl").
 // chrome://extensions/shortcuts sayfasından kullanıcı bu tuşları değiştirebilir.
 chrome.commands.onCommand.addListener((command, tab) => {
   if (!tab || !tab.id) return;

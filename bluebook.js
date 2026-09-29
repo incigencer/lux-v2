@@ -337,7 +337,13 @@
       el(
         "p",
         "lux-bb-hint",
-        "Select text, then pick a color. Ctrl+Shift+H and Ctrl+Shift+Z work too."
+        /mac/i.test(
+          (navigator.userAgentData && navigator.userAgentData.platform) ||
+            navigator.platform ||
+            ""
+        )
+          ? "Select text, then pick a color. Control+Shift+H and Control+Shift+Z work too."
+          : "Select text, then pick a color. Ctrl+Shift+H and Ctrl+Shift+Z work too."
       )
     );
 

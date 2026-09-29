@@ -13,7 +13,7 @@
   // vurgulanmış elemente tıklandığını bulabilsin.
   let lastRightClickTarget = null;
 
-  // Bu sekmede eklenen vurguların geçmişi (Ctrl+Shift+Z ile geri almak
+  // Bu sekmede eklenen vurguların geçmişi (Ctrl+Shift+Z / Mac: Control+Shift+Z ile geri almak
   // için) ve klavye kısayoluyla vurgularken kullanılacak "son renk".
   let highlightHistory = [];
   let lastColor = "#ffff00";
@@ -129,6 +129,13 @@
     },
     undo: function () {
       undoLastHighlight();
+    },
+    // Geri alınacak (hâlâ sayfada duran) bir vurgu var mı? khan.js,
+    // Ctrl/Cmd+Z'yi sadece bu durumda yakalıyor; yoksa tuş sayfaya kalıyor.
+    canUndo: function () {
+      return highlightHistory.some(function (span) {
+        return span && document.body.contains(span);
+      });
     }
   };
 
