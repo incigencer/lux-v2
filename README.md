@@ -35,6 +35,7 @@ Lux is a Manifest V3 browser extension that's easy to install and use, and runs 
 - Turn on **Auto-highlight**: any text you select on any site is highlighted as soon as you release the mouse (or finish a Shift+arrow selection), until you turn it off
 - Pick the auto-highlight color from the 6 swatches
 - The panel also lists your shortcuts (read from the browser, so it shows what's actually assigned) and links to the **Help** page
+- **Keep highlights after reload** switch: when on, new highlights are saved and come back when you reload or revisit the page (off by default)
 - Settings live in `chrome.storage.local`, so they apply to every tab at once and survive restarts
 
 ### ❓ Help page
@@ -120,14 +121,14 @@ After changing the code, just click the reload (🔄) icon on the `chrome://exte
 - **Permissions:** `contextMenus`, `activeTab`, `scripting`, `storage` — none of them require broad host permissions; `scripting` is only used through `activeTab` access granted by a user gesture (right-click / shortcut), and `storage` holds the auto-highlight settings.
 - **Selector strategy (bluebook.css/js):** satquestionbank.org is built with React + Tailwind/DaisyUI; instead of fragile generated class names, Lux targets the site's stable, meaningful classes (`.explanation_content`, `.answer_content`, `.join`, `.label`) and structural position via `:has()`.
 - **Highlighter safety:** No rule in `bluebook.css` sets `background` with `!important` on question/passage text — so the inline `background-color` on Lux's highlight spans always stays visible.
-- **No persistence:** Highlights disappear when the page reloads (a deliberate simplicity choice). The Bluebook Mode preference, however, persists in `localStorage`.
+- **Saving highlights (opt-in):** With *Keep highlights after reload* on, each highlight is stored in `chrome.storage.local` under the page address (without `#…`) as its text plus ~40 characters before and after it (a text-quote anchor). On load, Lux searches the page's visible text (skipping `<script>`, `<style>`, etc.) for the best match, and on late-loading pages retries for ~20 s as content appears. Removing or undoing a highlight deletes its record. The Bluebook Mode preference persists separately in `localStorage`.
 - **Chrome + Firefox compatibility:** In `manifest.json`, `background` defines both `service_worker` (Chrome) and `scripts` (Firefox's MV3 event page); the Firefox side is completed with `browser_specific_settings.gecko` (ID, minimum version, "no data collection" declaration). To meet AMO (addons.mozilla.org) review requirements, the icons in `bluebook.js` are parsed with `DOMParser` and added to the DOM instead of using `innerHTML`.
 
 ---
 
 ## Known limitations
 
-- Highlights aren't saved across pages or reloads.
+- Highlights are only saved when *Keep highlights after reload* is on; if a page's text changes significantly, a saved highlight may not be found again.
 - Bluebook Mode is designed only for satquestionbank.org; if the site significantly changes its DOM structure, the selectors may need updating.
 - Sites that redraw parts of the page (e.g. Khan Academy after you check an answer) can remove highlights made on those parts.
 - Not guaranteed to work on Firefox versions below 140; add-ons installed via "Load Temporary Add-on" are removed when the browser restarts.

@@ -19,14 +19,24 @@
     });
   }
 
-  chrome.storage.local.get(["autoHighlight", "autoColor"], function (res) {
-    res = res || {};
-    autoInput.checked = !!res.autoHighlight;
-    markColor(res.autoColor || DEFAULT_COLOR);
-  });
+  var persistInput = document.getElementById("persist");
+
+  chrome.storage.local.get(
+    ["autoHighlight", "autoColor", "persistHighlights"],
+    function (res) {
+      res = res || {};
+      autoInput.checked = !!res.autoHighlight;
+      persistInput.checked = !!res.persistHighlights;
+      markColor(res.autoColor || DEFAULT_COLOR);
+    }
+  );
 
   autoInput.addEventListener("change", function () {
     chrome.storage.local.set({ autoHighlight: autoInput.checked });
+  });
+
+  persistInput.addEventListener("change", function () {
+    chrome.storage.local.set({ persistHighlights: persistInput.checked });
   });
 
   swatches.forEach(function (b) {

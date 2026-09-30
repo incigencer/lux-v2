@@ -54,6 +54,11 @@ h1 {
   gap: 12px;
   cursor: pointer;
 }
+.row-sep {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
 .title {
   display: block;
   font-weight: 700;

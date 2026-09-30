@@ -47,6 +47,25 @@
 
     const range = selection.getRangeAt(0);
 
+    // "Keep highlights after reload" açıksa, metni SARMADAN ÖNCE konumunu
+    // tarif ediyoruz (sarmak DOM'u değiştirir ama metni değiştirmez).
+    const anchor = persistOn ? describeRange(range) : null;
+
+    const span = wrapRange(range, color);
+
+    lastColor = color;
+    highlightHistory.push(span);
+
+    selection.removeAllRanges();
+
+    if (anchor) {
+      const id = "h" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+      span.dataset.luxId = id;
+      saveRecord(Object.assign({ id: id, color: color }, anchor));
+    }
+  }
+
+  function wrapRange(range, color) {
     const span = document.createElement("span");
     span.className = "my-ext-highlight";
     span.style.backgroundColor = color;
@@ -61,11 +80,7 @@
       span.appendChild(fragment);
       range.insertNode(span);
     }
-
-    lastColor = color;
-    highlightHistory.push(span);
-
-    selection.removeAllRanges();
+    return span;
   }
 
   function removeHighlight() {
@@ -156,22 +171,268 @@
       ""
   );
 
+  // "Keep highlights after reload" (panelden). Açıkken yeni vurgular
+  // chrome.storage.local'a kaydedilir ve sayfa tekrar açılınca geri gelir.
+  let persistOn = false;
+
   try {
-    chrome.storage.local.get(["autoHighlight", "autoColor"], (res) => {
-      if (!res) return;
-      autoOn = !!res.autoHighlight;
-      if (res.autoColor) autoColor = res.autoColor;
-    });
+    chrome.storage.local.get(
+      ["autoHighlight", "autoColor", "persistHighlights"],
+      (res) => {
+        if (!res) return;
+        autoOn = !!res.autoHighlight;
+        if (res.autoColor) autoColor = res.autoColor;
+        persistOn = !!res.persistHighlights;
+        if (persistOn) startRestore();
+      }
+    );
     chrome.storage.onChanged.addListener((changes, area) => {
       if (area !== "local") return;
       if (changes.autoHighlight) autoOn = !!changes.autoHighlight.newValue;
       if (changes.autoColor && changes.autoColor.newValue) {
         autoColor = changes.autoColor.newValue;
       }
+      if (changes.persistHighlights) {
+        persistOn = !!changes.persistHighlights.newValue;
+        if (persistOn) startRestore();
+      }
     });
   } catch (e) {
-    // storage yoksa (çok eski tarayıcı) auto-highlight kapalı kalır
+    // storage yoksa (çok eski tarayıcı) auto-highlight / kaydetme kapalı kalır
   }
+
+  /* ----------------------------------------------------------------------
+     Vurguları kaydetme / geri yükleme
+     Her vurgu, sayfanın düz metni içindeki konumuyla değil, METNİN KENDİSİ
+     + önündeki/arkasındaki ~40 karakterle kaydedilir. Böylece site küçük
+     değişiklikler yapsa ya da içerik farklı sırada yüklense bile aynı yer
+     bulunabilir. Anahtar: sayfa adresi (# kısmı hariç).
+     ---------------------------------------------------------------------- */
+
+  const CONTEXT = 40;
+  let saveQueue = Promise.resolve();
+
+  function pageKey() {
+    return "lux:hl:" + location.href.split("#")[0];
+  }
+
+  // Sayfanın GÖRÜNEBİLİR metninin dizini. <script>, <style> vb. içindeki
+  // metinler atlanır — aksi halde (ör. Next.js sayfalarındaki JSON verisinde
+  // aynı cümle geçtiği için) vurgu bir <script>'in içine yerleştirilebilir.
+  const SKIP = "script, style, noscript, template, textarea, svg title";
+
+  function textIndex() {
+    const nodes = [];
+    let full = "";
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+      acceptNode: (n) =>
+        n.parentElement && n.parentElement.closest(SKIP)
+          ? NodeFilter.FILTER_REJECT
+          : NodeFilter.FILTER_ACCEPT
+    });
+    let node;
+    while ((node = walker.nextNode())) {
+      nodes.push({ node: node, start: full.length });
+      full += node.data;
+    }
+    return { nodes: nodes, full: full };
+  }
+
+  // Bir DOM sınır noktasının (container, offset) dizindeki karakter konumu
+  function offsetOf(index, container, offset) {
+    if (container.nodeType === 3) {
+      for (let i = 0; i < index.nodes.length; i++) {
+        if (index.nodes[i].node === container) return index.nodes[i].start + offset;
+      }
+    }
+    const boundary = document.createRange();
+    boundary.setStart(container, offset);
+    for (let i = 0; i < index.nodes.length; i++) {
+      // Bu metin düğümü sınır noktasında ya da sonrasında mı başlıyor?
+      if (boundary.comparePoint(index.nodes[i].node, 0) >= 0) return index.nodes[i].start;
+    }
+    return index.full.length;
+  }
+
+  function describeRange(range) {
+    try {
+      const index = textIndex();
+      const start = offsetOf(index, range.startContainer, range.startOffset);
+      const end = offsetOf(index, range.endContainer, range.endOffset);
+      const exact = index.full.slice(start, end);
+      if (!exact.trim()) return null;
+      return {
+        exact: exact,
+        prefix: index.full.slice(Math.max(0, start - CONTEXT), start),
+        suffix: index.full.slice(end, end + CONTEXT)
+      };
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Aynı anahtara art arda yazmalar birbirini ezmesin diye sıraya koyuyoruz
+  function updateRecords(key, fn) {
+    saveQueue = saveQueue.then(
+      () =>
+        new Promise((resolve) => {
+          try {
+            chrome.storage.local.get([key], (res) => {
+              const list = fn((res && res[key]) || []);
+              const obj = {};
+              obj[key] = list;
+              if (list.length) chrome.storage.local.set(obj, resolve);
+              else if (chrome.storage.local.remove) chrome.storage.local.remove(key, resolve);
+              else chrome.storage.local.set(obj, resolve);
+            });
+          } catch (e) {
+            resolve();
+          }
+        })
+    );
+  }
+
+  function saveRecord(rec) {
+    updateRecords(pageKey(), (list) => list.concat([rec]));
+  }
+
+  function deleteRecord(id) {
+    updateRecords(pageKey(), (list) => list.filter((r) => r.id !== id));
+  }
+
+  // İki metnin uçtan/baştan kaç karakteri örtüşüyor (bağlam puanı)
+  function commonSuffix(a, b) {
+    let n = 0;
+    while (n < a.length && n < b.length && a[a.length - 1 - n] === b[b.length - 1 - n]) n++;
+    return n;
+  }
+  function commonPrefix(a, b) {
+    let n = 0;
+    while (n < a.length && n < b.length && a[n] === b[n]) n++;
+    return n;
+  }
+
+  // Dizindeki karakter konumunu gerçek bir DOM noktasına çevir
+  function pointAt(index, pos, isEnd) {
+    for (let i = 0; i < index.nodes.length; i++) {
+      const n = index.nodes[i];
+      const len = n.node.data.length;
+      if (isEnd ? pos <= n.start + len : pos < n.start + len) {
+        return { node: n.node, offset: pos - n.start };
+      }
+    }
+    return null;
+  }
+
+  function isVisible(node) {
+    const el = node.nodeType === 1 ? node : node.parentElement;
+    return !!(el && el.getClientRects().length);
+  }
+
+  function locate(rec, index) {
+    const full = index.full;
+    let best = null;
+    let from = 0;
+    let guard = 0;
+    while (guard++ < 500) {
+      const at = full.indexOf(rec.exact, from);
+      if (at === -1) break;
+      const score =
+        commonSuffix(full.slice(Math.max(0, at - CONTEXT), at), rec.prefix || "") +
+        commonPrefix(full.slice(at + rec.exact.length, at + rec.exact.length + CONTEXT), rec.suffix || "");
+      const startPt = pointAt(index, at, false);
+      // Eşit puanda görünür olanı tercih et (ör. gizli kopyalar yerine)
+      const visibleBonus = startPt && isVisible(startPt.node) ? 0.5 : 0;
+      if (!best || score + visibleBonus > best.score) {
+        best = { at: at, score: score + visibleBonus };
+      }
+      from = at + 1;
+    }
+    if (!best) return null;
+    const s = pointAt(index, best.at, false);
+    const e = pointAt(index, best.at + rec.exact.length, true);
+    if (!s || !e) return null;
+    const range = document.createRange();
+    range.setStart(s.node, s.offset);
+    range.setEnd(e.node, e.offset);
+    return range;
+  }
+
+  let restoreObserver = null;
+  let restoreTimer = null;
+  let restoreDeadline = 0;
+  let restoredKey = null;
+
+  // Kayıtlı vurgulardan sayfada henüz olmayanları yerleştir; hepsi
+  // yerleşince true döner.
+  function restorePending(records) {
+    let pending = 0;
+    let index = null;
+    records.forEach((rec) => {
+      if (document.querySelector('[data-lux-id="' + rec.id + '"]')) return;
+      if (index === null) index = textIndex();
+      const range = locate(rec, index);
+      if (!range) {
+        pending++;
+        return;
+      }
+      try {
+        const span = wrapRange(range, rec.color);
+        span.dataset.luxId = rec.id;
+        highlightHistory.push(span);
+        index = null; // DOM değişti; bir sonraki kayıt için dizini tazele
+      } catch (e) {
+        pending++;
+      }
+    });
+    return pending === 0;
+  }
+
+  function stopRestore() {
+    if (restoreObserver) restoreObserver.disconnect();
+    restoreObserver = null;
+    clearTimeout(restoreTimer);
+  }
+
+  // Sayfa (veya tek sayfalık uygulamada yeni "sayfa") açıldığında kayıtlı
+  // vurguları geri getir. İçeriği sonradan yüklenen sitelerde (ör. Khan
+  // Academy) içerik gelene kadar ~20 sn boyunca DOM değiştikçe tekrar dener.
+  function startRestore() {
+    if (!persistOn || !document.body) return;
+    const key = pageKey();
+    restoredKey = key;
+    stopRestore();
+    try {
+      chrome.storage.local.get([key], (res) => {
+        const records = (res && res[key]) || [];
+        if (!records.length || !persistOn || restoredKey !== key) return;
+        if (restorePending(records)) return;
+        restoreDeadline = Date.now() + 20000;
+        restoreObserver = new MutationObserver(() => {
+          clearTimeout(restoreTimer);
+          restoreTimer = setTimeout(() => {
+            if (!persistOn || restoredKey !== key || Date.now() > restoreDeadline) {
+              stopRestore();
+              return;
+            }
+            if (restorePending(records)) stopRestore();
+          }, 400);
+        });
+        restoreObserver.observe(document.body, { childList: true, subtree: true, characterData: true });
+        setTimeout(stopRestore, 20500);
+      });
+    } catch (e) {}
+  }
+
+  // Tek sayfalık uygulamalarda adres değişince yeni sayfanın vurgularını yükle
+  let lastHref = location.href.split("#")[0];
+  setInterval(() => {
+    const href = location.href.split("#")[0];
+    if (href !== lastHref) {
+      lastHref = href;
+      if (persistOn) startRestore();
+    }
+  }, 1000);
 
   // Metin kutusu / düzenlenebilir alan içinde miyiz? Orada ne vurguluyoruz
   // ne de Ctrl+Z'yi yakalıyoruz — yazı yazma davranışı bozulmasın.
@@ -252,5 +513,11 @@
 
     const idx = highlightHistory.indexOf(highlightEl);
     if (idx !== -1) highlightHistory.splice(idx, 1);
+
+    // Kaydedilmiş bir vurguysa kaydını da sil (ayar kapalı olsa bile —
+    // silinen vurgu bir sonraki açılışta geri gelmesin).
+    if (highlightEl.dataset && highlightEl.dataset.luxId) {
+      deleteRecord(highlightEl.dataset.luxId);
+    }
   }
 })();

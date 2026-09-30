@@ -19,6 +19,7 @@
     <nav class="toc">
       <a href="#highlight">Highlighting</a>
       <a href="#auto">Auto-highlight</a>
+      <a href="#keep">Keep after reload</a>
       <a href="#shortcuts">Shortcuts</a>
       <a href="#bluebook">Bluebook Mode</a>
       <a href="#trouble">Troubleshooting</a>
@@ -33,7 +34,7 @@
       </ol>
       <p><b>To remove highlights:</b> select the text (highlighted or not) → right-click → <b>Remove highlight</b>. Every highlight inside the selection is removed at once.</p>
       <p><b>To undo the last highlight:</b> press <kbd class="k-undo"></kbd>, or <kbd class="k-undo-global"></kbd>.</p>
-      <p class="note">Highlights are not saved — they disappear when the page reloads.</p>
+      <p class="note">By default highlights disappear when the page reloads. To keep them, see <a href="#keep">Keep highlights after reload</a>.</p>
     </section>
 
     <section id="auto">
@@ -45,6 +46,18 @@
         <li>Select text. Press <kbd class="k-undo"></kbd> to undo the last one.</li>
       </ol>
       <p class="note">Text you select inside text boxes is never highlighted. Auto-highlight stays on, in every tab, until you turn it off in the panel.</p>
+    </section>
+
+    <section id="keep">
+      <h2>Keep highlights after reload</h2>
+      <p>Turn on <b>Keep highlights after reload</b> in the Lux panel and your highlights are saved. They come back when you reload the page or open the same address again later.</p>
+      <ul>
+        <li>Only highlights you make <b>while the setting is on</b> are saved.</li>
+        <li>Removing or undoing a highlight also deletes it from storage, so it won't come back.</li>
+        <li>Turning the setting off hides saved highlights on reload but doesn't delete them. Turn it back on and they return.</li>
+        <li>Lux finds each highlight by its text and the words around it. If the page's text changes a lot, a highlight may not come back. On pages that load content late (like Khan Academy), Lux keeps trying for a few seconds.</li>
+      </ul>
+      <p class="note">Highlights are stored only in your browser, never sent anywhere.</p>
     </section>
 
     <section id="shortcuts">
@@ -90,6 +103,8 @@
       <p>Reload the page once after installing or updating Lux.</p>
       <h3>Some pages can't be highlighted</h3>
       <p>Browsers don't let extensions run on their own pages (like <code>chrome://</code> pages or the extension store). Highlights can also disappear when a site redraws part of the page, for example after you check an answer.</p>
+      <h3>A saved highlight didn't come back</h3>
+      <p>Make sure <b>Keep highlights after reload</b> is on. If the page's text changed, or the page is a different address (for example a different question number), Lux can't find the old spot.</p>
     </section>
   </main>
   <script src="help.js"></script>
