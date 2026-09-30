@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lux Help</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <main>
+    <header class="top">
+      <img src="icons/icon128.png" width="56" height="56" alt="">
+      <div>
+        <h1>Lux Help</h1>
+        <p>Everything Lux does, and every shortcut, in one place.</p>
+      </div>
+    </header>
+
+    <nav class="toc">
+      <a href="#highlight">Highlighting</a>
+      <a href="#auto">Auto-highlight</a>
+      <a href="#shortcuts">Shortcuts</a>
+      <a href="#bluebook">Bluebook Mode</a>
+      <a href="#trouble">Troubleshooting</a>
+    </nav>
+
+    <section id="highlight">
+      <h2>Highlighting</h2>
+      <ol>
+        <li>Select some text on any page.</li>
+        <li>Right-click → <b>Highlight</b> → pick a color (Yellow, Blue, Pink, Green, Orange, Purple).</li>
+        <li>Or press <kbd class="k-highlight"></kbd> to use the last color you picked.</li>
+      </ol>
+      <p><b>To remove highlights:</b> select the text (highlighted or not) → right-click → <b>Remove highlight</b>. Every highlight inside the selection is removed at once.</p>
+      <p><b>To undo the last highlight:</b> press <kbd class="k-undo"></kbd>, or <kbd class="k-undo-global"></kbd>.</p>
+      <p class="note">Highlights are not saved — they disappear when the page reloads.</p>
+    </section>
+
+    <section id="auto">
+      <h2>Auto-highlight</h2>
+      <p>With auto-highlight on, text is highlighted <b>as soon as you select it</b>, with no right-click or shortcut needed. It works on every site, including Khan Academy questions.</p>
+      <ol>
+        <li>Click the <b>Lux icon</b> in the browser toolbar. If you don't see it, click the puzzle-piece icon and pin Lux.</li>
+        <li>Turn on <b>Auto-highlight</b> and pick a color.</li>
+        <li>Select text. Press <kbd class="k-undo"></kbd> to undo the last one.</li>
+      </ol>
+      <p class="note">Text you select inside text boxes is never highlighted. Auto-highlight stays on, in every tab, until you turn it off in the panel.</p>
+    </section>
+
+    <section id="shortcuts">
+      <h2>Keyboard shortcuts</h2>
+      <table>
+        <thead>
+          <tr><th>Action</th><th>Windows / Linux</th><th>Mac</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Highlight the selection (last-used color)</td><td><kbd>Ctrl+Shift+H</kbd></td><td><kbd>Control+Shift+H</kbd></td></tr>
+          <tr><td>Undo the last highlight</td><td><kbd>Ctrl+Z</kbd></td><td><kbd>⌘Z</kbd></td></tr>
+          <tr><td>Undo the last highlight (alternative)</td><td><kbd>Ctrl+Shift+Z</kbd></td><td><kbd>Control+Shift+Z</kbd></td></tr>
+        </tbody>
+      </table>
+      <p id="your-os" class="note"></p>
+      <h3>Why two undo shortcuts?</h3>
+      <ul>
+        <li><kbd class="k-undo"></kbd> is the natural one. It only acts when there is a Lux highlight to undo and you're not typing in a text box, so the site's own undo keeps working otherwise.</li>
+        <li><kbd class="k-undo-global"></kbd> is a browser-level shortcut. It always undoes the last Lux highlight, even when the page has focus somewhere unusual.</li>
+      </ul>
+      <h3>Why does Mac use Control, not ⌘?</h3>
+      <p>⌘+Shift+H is already Chrome's "Home page" shortcut and ⌘+Shift+Z is Redo in text boxes. The real <b>Control</b> key avoids both conflicts and matches the Windows keys.</p>
+    </section>
+
+    <section id="bluebook">
+      <h2>Bluebook Mode <span class="tag">satquestionbank.org</span></h2>
+      <p>Makes satquestionbank.org look like College Board's Bluebook app.</p>
+      <ol>
+        <li>Open a question set on satquestionbank.org (use <b>Find Questions</b>).</li>
+        <li>Click <b>Bluebook Mode</b> in the bottom-right corner.</li>
+        <li>Use <b>Highlights &amp; Notes</b>, <b>Calculator</b> (math only), <b>Reference</b> and <b>More</b> in the top bar. <b>ABC</b> crosses out answers.</li>
+        <li>To turn it off: <b>More → Turn off Bluebook Mode</b>.</li>
+      </ol>
+    </section>
+
+    <section id="trouble">
+      <h2>Troubleshooting</h2>
+      <h3>A shortcut doesn't work</h3>
+      <p>Your browser may have given the shortcut to something else, or it was never assigned. Check it here:</p>
+      <p><button type="button" id="open-shortcuts">Open shortcut settings</button></p>
+      <p class="note" id="shortcuts-hint">Chrome: <code>chrome://extensions/shortcuts</code> · Firefox: <code>about:addons</code> → ⚙ → <i>Manage Extension Shortcuts</i></p>
+      <h3>Nothing happens on a page that was already open</h3>
+      <p>Reload the page once after installing or updating Lux.</p>
+      <h3>Some pages can't be highlighted</h3>
+      <p>Browsers don't let extensions run on their own pages (like <code>chrome://</code> pages or the extension store). Highlights can also disappear when a site redraws part of the page, for example after you check an answer.</p>
+    </section>
+  </main>
+  <script src="help.js"></script>
+</body>
+</html>

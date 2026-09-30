@@ -130,14 +130,114 @@
     undo: function () {
       undoLastHighlight();
     },
-    // Geri alınacak (hâlâ sayfada duran) bir vurgu var mı? khan.js,
-    // Ctrl/Cmd+Z'yi sadece bu durumda yakalıyor; yoksa tuş sayfaya kalıyor.
-    canUndo: function () {
-      return highlightHistory.some(function (span) {
-        return span && document.body.contains(span);
-      });
-    }
+    // Geri alınacak (hâlâ sayfada duran) bir vurgu var mı?
+    canUndo: canUndo
   };
+
+  function canUndo() {
+    return highlightHistory.some(function (span) {
+      return span && document.body.contains(span);
+    });
+  }
+
+  /* ----------------------------------------------------------------------
+     Auto-highlight + Ctrl/⌘+Z
+     Toolbar panelindeki (popup) "Auto-highlight" açıkken, seçilen her metin
+     fare bırakıldığı anda panelde seçilen renkle vurgulanır. Ayar
+     chrome.storage.local'da; panelde değişince tüm açık sekmeler anında
+     güncellenir (storage.onChanged).
+     ---------------------------------------------------------------------- */
+
+  let autoOn = false;
+  let autoColor = "#ffff00";
+  const IS_MAC = /mac/i.test(
+    (navigator.userAgentData && navigator.userAgentData.platform) ||
+      navigator.platform ||
+      ""
+  );
+
+  try {
+    chrome.storage.local.get(["autoHighlight", "autoColor"], (res) => {
+      if (!res) return;
+      autoOn = !!res.autoHighlight;
+      if (res.autoColor) autoColor = res.autoColor;
+    });
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area !== "local") return;
+      if (changes.autoHighlight) autoOn = !!changes.autoHighlight.newValue;
+      if (changes.autoColor && changes.autoColor.newValue) {
+        autoColor = changes.autoColor.newValue;
+      }
+    });
+  } catch (e) {
+    // storage yoksa (çok eski tarayıcı) auto-highlight kapalı kalır
+  }
+
+  // Metin kutusu / düzenlenebilir alan içinde miyiz? Orada ne vurguluyoruz
+  // ne de Ctrl+Z'yi yakalıyoruz — yazı yazma davranışı bozulmasın.
+  function isEditable(node) {
+    const el = node && node.nodeType === 1 ? node : node && node.parentElement;
+    if (!el || !el.closest) return false;
+    return !!el.closest(
+      'input, textarea, select, [contenteditable=""], [contenteditable="true"]'
+    );
+  }
+
+  // Lux'un kendi arayüzü (Bluebook Mode kabuğu/panelleri) üzerinde
+  // yapılan tıklamalar vurgulama tetiklemesin.
+  function isLuxUi(node) {
+    const el = node && node.nodeType === 1 ? node : node && node.parentElement;
+    return !!(
+      el &&
+      el.closest &&
+      el.closest(
+        "#lux-bb-toggle, .lux-bb-header, .lux-bb-footer, .lux-bb-panel, .lux-bb-qstrip"
+      )
+    );
+  }
+
+  function maybeAutoHighlight(event) {
+    if (!autoOn) return;
+    if (isLuxUi(event.target)) return;
+    // Seçim, mouseup'tan hemen sonra kesinleşiyor
+    setTimeout(() => {
+      if (!autoOn) return;
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return;
+      if (!selection.toString().trim()) return;
+      const range = selection.getRangeAt(0);
+      if (isEditable(range.startContainer) || isEditable(range.endContainer)) return;
+      highlightSelection(autoColor);
+    }, 0);
+  }
+
+  document.addEventListener("mouseup", maybeAutoHighlight, true);
+  // Shift+ok tuşlarıyla yapılan klavye seçimi, Shift bırakılınca vurgulanır
+  document.addEventListener(
+    "keyup",
+    (event) => {
+      if (event.key === "Shift") maybeAutoHighlight(event);
+    },
+    true
+  );
+
+  // Ctrl+Z (Mac'te ⌘Z): en son vurguyu geri al. Sadece geri alınacak bir
+  // vurgu varsa ve metin kutusunda değilsek tuşu yakalıyoruz; aksi halde
+  // tuş sitenin kendi davranışına kalır.
+  document.addEventListener(
+    "keydown",
+    (event) => {
+      const mod = IS_MAC ? event.metaKey : event.ctrlKey;
+      if (!mod || event.shiftKey || event.altKey) return;
+      if ((event.key || "").toLowerCase() !== "z") return;
+      if (isEditable(event.target)) return;
+      if (!canUndo()) return;
+      event.preventDefault();
+      event.stopPropagation();
+      undoLastHighlight();
+    },
+    true
+  );
 
   function unwrapHighlightElement(highlightEl) {
     const parent = highlightEl.parentNode;

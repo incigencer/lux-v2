@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Lux</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header class="head">
+    <img src="icons/icon48.png" width="28" height="28" alt="">
+    <div>
+      <h1>Lux</h1>
+      <p class="sub">Text highlighter</p>
+    </div>
+  </header>
+
+  <section class="card">
+    <label class="row" for="auto">
+      <span>
+        <span class="title">Auto-highlight</span>
+        <span class="desc">Highlight text as soon as you select it, on any site.</span>
+      </span>
+      <span class="switch">
+        <input type="checkbox" id="auto">
+        <span class="track"><span class="thumb"></span></span>
+      </span>
+    </label>
+
+    <div class="colors">
+      <span class="label">Color</span>
+      <div class="swatches" id="swatches">
+        <button type="button" class="swatch" data-color="#ffff00" title="Yellow" style="background:#ffff00"></button>
+        <button type="button" class="swatch" data-color="#a8d8ff" title="Blue" style="background:#a8d8ff"></button>
+        <button type="button" class="swatch" data-color="#ffb3d9" title="Pink" style="background:#ffb3d9"></button>
+        <button type="button" class="swatch" data-color="#b3ffb3" title="Green" style="background:#b3ffb3"></button>
+        <button type="button" class="swatch" data-color="#ffd9a8" title="Orange" style="background:#ffd9a8"></button>
+        <button type="button" class="swatch" data-color="#e0b3ff" title="Purple" style="background:#e0b3ff"></button>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <span class="label">Shortcuts</span>
+    <ul class="keys">
+      <li><span>Highlight selection</span><span><kbd data-key="highlight"></kbd></span></li>
+      <li><span>Undo last highlight</span><span><kbd data-key="undo"></kbd> or <kbd data-key="undo-global"></kbd></span></li>
+    </ul>
+  </section>
+
+  <a href="#" class="help" id="help">Help &amp; shortcuts →</a>
+
+  <script src="popup.js"></script>
+</body>
+</html>

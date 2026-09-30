@@ -12,12 +12,13 @@
     }
   },
   "name": "Lux",
-  "version": "1.5",
-  "description": "Seçtiğiniz metni sağ tık menüsünden veya klavye kısayoluyla renkli vurgulayın; kısayolla geri alın.",
+  "version": "1.6",
+  "description": "Highlight text on any page from the right-click menu, keyboard shortcuts, or auto-highlight; includes a Bluebook Mode for satquestionbank.org.",
   "permissions": [
     "contextMenus",
     "activeTab",
-    "scripting"
+    "scripting",
+    "storage"
   ],
   "icons": {
     "16": "icons/icon16.png",
@@ -32,7 +33,8 @@
       "32": "icons/icon32.png",
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
-    }
+    },
+    "default_popup": "popup.html"
   },
   "background": {
     "service_worker": "background.js",
@@ -61,18 +63,6 @@
       "js": [
         "bluebook.js"
       ]
-    },
-    {
-      "matches": [
-        "https://www.khanacademy.org/*",
-        "https://khanacademy.org/*"
-      ],
-      "css": [
-        "khan.css"
-      ],
-      "js": [
-        "khan.js"
-      ]
     }
   ],
   "commands": {
@@ -81,14 +71,14 @@
         "default": "Ctrl+Shift+H",
         "mac": "MacCtrl+Shift+H"
       },
-      "description": "Seçili metni son kullanılan renkle vurgula"
+      "description": "Highlight the selected text with the last-used color"
     },
     "undo-highlight": {
       "suggested_key": {
         "default": "Ctrl+Shift+Z",
         "mac": "MacCtrl+Shift+Z"
       },
-      "description": "Son vurgulamayı geri al"
+      "description": "Undo the last highlight"
     }
   }
 }

@@ -2,55 +2,55 @@
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
     id: "highlight-parent",
-    title: "Vurgula",
+    title: "Highlight",
     contexts: ["selection"]
   });
 
   chrome.contextMenus.create({
     id: "highlight-yellow",
     parentId: "highlight-parent",
-    title: "Sarı",
+    title: "Yellow",
     contexts: ["selection"]
   });
 
   chrome.contextMenus.create({
     id: "highlight-blue",
     parentId: "highlight-parent",
-    title: "Mavi",
+    title: "Blue",
     contexts: ["selection"]
   });
 
   chrome.contextMenus.create({
     id: "highlight-pink",
     parentId: "highlight-parent",
-    title: "Pembe",
+    title: "Pink",
     contexts: ["selection"]
   });
 
   chrome.contextMenus.create({
     id: "highlight-green",
     parentId: "highlight-parent",
-    title: "Yeşil",
+    title: "Green",
     contexts: ["selection"]
   });
 
   chrome.contextMenus.create({
     id: "highlight-orange",
     parentId: "highlight-parent",
-    title: "Turuncu",
+    title: "Orange",
     contexts: ["selection"]
   });
 
   chrome.contextMenus.create({
     id: "highlight-purple",
     parentId: "highlight-parent",
-    title: "Mor",
+    title: "Purple",
     contexts: ["selection"]
   });
 
   chrome.contextMenus.create({
     id: "remove-highlight",
-    title: "Vurguyu Kaldır",
+    title: "Remove highlight",
     contexts: ["selection"]
   });
 });
